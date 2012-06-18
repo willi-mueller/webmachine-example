@@ -69,6 +69,17 @@ class TestPaperAPI(unittest.TestCase):
 		self.assertEqual(resp.status_code, 201)
 
 
+	def test_put_updates_paper(self):
+		url = self.paper_url + '0'
+		resp = requests.get(url)
+		# Paper exists
+		self.assertEqual(resp.status_code, 200)
+
+		resp2 = requests.put(url, data=self.new_paper2, headers=self.json_headers)
+		self.assertEqual(resp2.status_code, 200)
+		self.assertEqual(resp2.content, '{"id":"0", "title":"DEF"}')
+
+
 	""" ********* Helpers *********"""
 	def get_paper_with_id_and_header(self, id, headers=None):
 		if headers == None:
