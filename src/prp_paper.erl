@@ -60,6 +60,12 @@ from_json(RD, Ctx) ->
 	{true, Resp, Ctx}.
 
 
+delete_resource(RD, Ctx) ->
+	Id = wrq:path_info(id, RD),
+	prp_schema:delete_paper(Id),
+	io:format("~p, After Delete: ~p~n", [?LINE, prp_schema:paper_exists(Id)]),
+	{true, RD, Ctx}.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Private

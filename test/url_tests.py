@@ -48,6 +48,20 @@ class TestPaperAPI(unittest.TestCase):
 		resp2 = requests.get(url)
 
 
+	def test_delete_paper(self):
+		# create it first
+		url = self.paper_url + '0'
+
+		resp = requests.put(url, data=self.new_paper, headers=self.json_headers)
+		self.assertEqual(resp.status_code, 200)
+
+		resp1 = requests.delete(url)
+		self.assertEqual(resp1.status_code, 204)
+
+		# test if durable
+		resp2 = requests.get(url)
+		self.assertEqual(resp2.status_code, 404)
+
 
 	""" ********* Helpers *********"""
 	def get_paper_with_id_and_header(self, id, headers=None):
