@@ -25,3 +25,14 @@ to_html(RD, Ctx) ->
 	Id = wrq:path_info(id, RD),
 	Resp = "<html><body>" ++ Id ++ "</body></html>",
 	{Resp, RD, Ctx}.
+
+to_json(RD, Ctx) ->
+	Id = wrq:path_info(id, RD),
+	{paper, Id2, Title} = prp_schema:read_paper(Id),
+
+	Resp = mochijson:encode({struct, [
+		{id, integer_to_list(Id2)},
+		{title, Title}
+	]}),
+
+	{Resp, RD, Ctx}.

@@ -28,6 +28,13 @@ class TestPaperAPI(unittest.TestCase):
 			self.assertEqual(resp.content, "<html><body>" + str(id) + "</body></html>")
 
 
+	def test_get_on_paper_returns_id_in_json(self):
+		for id in 1,2,3:
+			resp = self.get_paper_with_id_and_header(id)
+			self.assertEqual(resp.status_code, 200)
+			self.assertEqual(resp.content, '{"id":' + '"' + str(id) + '",'\
+					'"title":'+ '"' + str(id) + '"}')
+
 
 	""" ********* Helpers *********"""
 	def get_paper_with_id_and_header(self, id, headers=None):
