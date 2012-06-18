@@ -13,7 +13,6 @@ class TestPaperAPI(unittest.TestCase):
 		self.json_headers ={"Content-Type" : "application/json", "Accept" : "application/json"}
 		self.new_paper = {"title": "ABC"}
 		self.new_paper2 =  {"title": "DEF"}
-		self.new_paper_url = self.paper_url + '0'
 
 
 	def test_get_on_root_returns_html_hello_world(self):
@@ -34,6 +33,20 @@ class TestPaperAPI(unittest.TestCase):
 			self.assertEqual(resp.status_code, 200)
 			self.assertEqual(resp.content, '{"id":' + '"' + str(id) + '",'\
 					'"title":'+ '"' + str(id) + '"}')
+
+
+	def test_put__new_paper(self):
+		url = self.paper_url + '0'
+		# delete it first if present
+		requests.delete(url)
+
+		resp = requests.put(url, data=self.new_paper, headers=self.json_headers)
+		self.assertEqual(resp.status_code, 200)
+		self.assertEqual(resp.content, '{"id":"0", "title":"ABC"}')
+
+		# Test durability
+		resp2 = requests.get(url)
+
 
 
 	""" ********* Helpers *********"""
