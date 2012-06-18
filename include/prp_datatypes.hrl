@@ -1,0 +1,4 @@
+-record(paper, {
+		id,
+		title
+	}).

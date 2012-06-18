@@ -1,0 +1,6 @@
+priv/log/*
+build/*
+traces/*
+
+rebar
+deps/*
