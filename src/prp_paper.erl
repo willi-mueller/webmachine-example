@@ -67,6 +67,14 @@ delete_resource(RD, Ctx) ->
 	{true, RD, Ctx}.
 
 
+post_is_create(RD, Ctx) ->
+	{true, RD, Ctx}.
+
+
+allow_missing_post(RD, Ctx) ->
+	{true, RD, Ctx}.
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Private
 %%%%%%%%%%%%%%%%%%%%%%%%%%

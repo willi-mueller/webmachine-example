@@ -63,6 +63,12 @@ class TestPaperAPI(unittest.TestCase):
 		self.assertEqual(resp2.status_code, 404)
 
 
+	def test_post_new_paper(self):
+		resp = requests.post(self.paper_url, data=self.new_paper,
+				headers=self.json_headers)
+		self.assertEqual(resp.status_code, 201)
+
+
 	""" ********* Helpers *********"""
 	def get_paper_with_id_and_header(self, id, headers=None):
 		if headers == None:
