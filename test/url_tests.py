@@ -22,31 +22,44 @@ class TestPaperAPI(unittest.TestCase):
 
 	def test_get_on_paper_returns_id_in_html(self):
 		for id in 1,2,3:
-			resp = self.get_paper_with_id_and_header(id, headers={})
+			resp = requests.get(self.paper_url + str(id))
 			self.assertEqual(resp.status_code, 200)
 			self.assertEqual(resp.content, "<html><body>" + str(id) + "</body></html>")
 
 
 	def test_get_on_paper_returns_id_in_json(self):
 		for id in 1,2,3:
-			resp = self.get_paper_with_id_and_header(id)
+			resp =requests.get(self.paper_url + str(id), \
+					headers=self.json_headers)
 			self.assertEqual(resp.status_code, 200)
 			self.assertEqual(resp.content, '{"id":' + '"' + str(id) + '",'\
 					'"title":'+ '"' + str(id) + '"}')
 
 
-	def test_put__new_paper(self):
+	def test_put_new_paper(self):
 		url = self.paper_url + '0'
 		# delete it first if present
-		requests.delete(url)
+		r = requests.delete(url)
+		#print r.headers, r.status_code
 
 		resp = requests.put(url, data=self.new_paper, headers=self.json_headers)
-		self.assertEqual(resp.status_code, 200)
-		self.assertEqual(resp.content, '{"id":"0", "title":"ABC"}')
+		self.assertEqual(resp.status_code, 201)
+		self.assertEqual(resp.content, '{"id":"0","title":"ABC"}')
 
 		# Test durability
 		resp2 = requests.get(url)
 
+
+	def test_put_updates_paper(self):
+		url = self.paper_url + '0'
+		resp = requests.get(url)
+		# Paper exists
+		self.assertEqual(resp.status_code, 200)
+
+		resp2 = requests.put(url, data=self.new_paper2, headers=self.json_headers)
+		self.assertEqual(resp2.status_code, 200)
+		self.assertEqual(resp2.content, '{"id":"0","title":"DEF"}')
+		requests.delete(url)
 
 	def test_delete_paper(self):
 		# create it first
@@ -68,23 +81,17 @@ class TestPaperAPI(unittest.TestCase):
 				headers=self.json_headers)
 		self.assertEqual(resp.status_code, 201)
 
+		self.assertNotEqual(resp.content, '')
 
-	def test_put_updates_paper(self):
+	def test_post_paper_creates_or_updates_it(self):
 		url = self.paper_url + '0'
-		resp = requests.get(url)
-		# Paper exists
-		self.assertEqual(resp.status_code, 200)
+		# delete it first if present
+		requests.delete(url)
 
-		resp2 = requests.put(url, data=self.new_paper2, headers=self.json_headers)
-		self.assertEqual(resp2.status_code, 200)
-		self.assertEqual(resp2.content, '{"id":"0", "title":"DEF"}')
+		resp = requests.post(self.paper_url, data=self.new_paper, headers=self.json_headers)
+		self.assertEqual(resp.status_code, 201)
+		self.assertNotEqual(resp.content, '')
 
-
-	""" ********* Helpers *********"""
-	def get_paper_with_id_and_header(self, id, headers=None):
-		if headers == None:
-			headers = self.json_headers
-		return requests.get(self.paper_url + str(id), headers=headers)
 
 if __name__ == "__main__":
 	suite = unittest.TestLoader(verbosity=2).loadTestsFromTestCase(TestPaperAPI)

@@ -48,16 +48,22 @@ to_json(RD, Ctx) ->
 
 
 from_json(RD, Ctx) ->
-	Id = new_path(RD),
+	Id = id_from_path(RD),
 
 	<<"title=", Title/binary>> = wrq:req_body(RD),
 	Title1 = binary_to_list(Title),
 
 	prp_schema:create_paper(list_to_integer(Id), Title1),
 
-	JSON = build_json(Id, Title1),
+	JSON = paper2json(Id, Title1),
 	Resp = wrq:set_resp_body(JSON, RD),
-	{true, Resp, Ctx}.
+
+	case resource_exists(Resp, Ctx) of
+		{true, _, _}  -> {true, Resp, Ctx};
+		{false, _, _} ->
+			R = wrq:set_resp_header("Location", Id, Resp),
+			{true, R, Ctx}
+	end.
 
 
 delete_resource(RD, Ctx) ->
@@ -89,19 +95,25 @@ create_path(RD, Ctx) ->
 % Private
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-new_path(RD) ->
+-spec id_from_path(_) -> list().
+%% _ should be wm_reqdata() but this type is not exported
+id_from_path(RD) ->
 	case wrq:path_info(id, RD) of
 		undefined->
-			["paper", ID] = string:tokens(wrq:disp_path(RD), "/"),
-			ID;
+			["paper", Id] = string:tokens(wrq:disp_path(RD), "/"),
+			Id;
 		Id -> Id
 	end.
 
 
-build_json(Id, Title) ->
-	list_to_binary( "{" ++  "\"id\":" ++ "\"" ++ Id ++ "\"" ++ ", " ++
-		"\"title\":" ++ "\"" ++ Title ++ "\"" ++ "}" ).
+-spec paper2json(list(), list()) -> list().
+paper2json(Id, Title) ->
+	mochijson:encode({struct, [
+					{id, Id},
+					{title, Title} ]}).
 
+
+-spec generate_id()->integer().
 generate_id() ->
 	mnesia:table_info(paper, size) + 1.
 
