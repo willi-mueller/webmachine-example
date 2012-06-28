@@ -40,7 +40,6 @@ class TestPaperAPI(unittest.TestCase):
 		url = self.paper_url + '0'
 		# delete it first if present
 		r = requests.delete(url)
-		#print r.headers, r.status_code
 
 		resp = requests.put(url, data=self.new_paper, headers=self.json_headers)
 		self.assertEqual(resp.status_code, 201)
@@ -61,12 +60,13 @@ class TestPaperAPI(unittest.TestCase):
 		self.assertEqual(resp2.content, '{"id":"0","title":"DEF"}')
 		requests.delete(url)
 
+
 	def test_delete_paper(self):
 		# create it first
 		url = self.paper_url + '0'
 
 		resp = requests.put(url, data=self.new_paper, headers=self.json_headers)
-		self.assertEqual(resp.status_code, 200)
+		self.assertEqual(resp.status_code, 201)
 
 		resp1 = requests.delete(url)
 		self.assertEqual(resp1.status_code, 204)
@@ -83,14 +83,16 @@ class TestPaperAPI(unittest.TestCase):
 
 		self.assertNotEqual(resp.content, '')
 
-	def test_post_paper_creates_or_updates_it(self):
-		url = self.paper_url + '0'
-		# delete it first if present
-		requests.delete(url)
+	def test_post_specific_paper_creates_another(self):
+		url = self.paper_url + '1'
 
-		resp = requests.post(self.paper_url, data=self.new_paper, headers=self.json_headers)
+		resp = requests.post(url, data=self.new_paper, headers=self.json_headers)
 		self.assertEqual(resp.status_code, 201)
-		self.assertNotEqual(resp.content, '')
+		self.assertEqual(resp.content,  '{"id":"1","title":"ABC"}')
+		# new one was created
+		self.assertNotEqual(resp.headers["location"], None)
+		# the new one is not the one which the POSt was apllied to
+		self.assertNotEqual(resp.headers["location"], self.paper_url+'1')
 
 
 if __name__ == "__main__":

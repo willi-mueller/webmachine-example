@@ -6,6 +6,7 @@
 -include("include/prp_datatypes.hrl").
 
 
+
 init(Config) ->
 	prp_schema:init_tables(),
 	prp_schema:fill_with_dummies(),
@@ -49,21 +50,20 @@ to_json(RD, Ctx) ->
 
 from_json(RD, Ctx) ->
 	Id = id_from_path(RD),
-
 	<<"title=", Title/binary>> = wrq:req_body(RD),
 	Title1 = binary_to_list(Title),
+
+	case resource_exists(RD, Ctx) of
+		{false, _, _} ->
+			Resp = wrq:set_resp_header("Location", Id, RD);
+		{true, _, _}  -> Resp = RD
+	end,
 
 	prp_schema:create_paper(list_to_integer(Id), Title1),
 
 	JSON = paper2json(Id, Title1),
-	Resp = wrq:set_resp_body(JSON, RD),
-
-	case resource_exists(Resp, Ctx) of
-		{true, _, _}  -> {true, Resp, Ctx};
-		{false, _, _} ->
-			R = wrq:set_resp_header("Location", Id, Resp),
-			{true, R, Ctx}
-	end.
+	R = wrq:set_resp_body(JSON, Resp),
+	{true, R, Ctx}.
 
 
 delete_resource(RD, Ctx) ->
@@ -95,8 +95,7 @@ create_path(RD, Ctx) ->
 % Private
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec id_from_path(_) -> list().
-%% _ should be wm_reqdata() but this type is not exported
+-spec id_from_path(wm_reqdata()) -> list().
 id_from_path(RD) ->
 	case wrq:path_info(id, RD) of
 		undefined->
@@ -116,4 +115,3 @@ paper2json(Id, Title) ->
 -spec generate_id()->integer().
 generate_id() ->
 	mnesia:table_info(paper, size) + 1.
-
