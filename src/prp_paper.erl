@@ -49,12 +49,11 @@ from_json(RD, Ctx) ->
 	from_json(RD, Ctx, get_title(RD)).
 
 -spec from_json(wm_reqdata(), any(), {error, no_data})
-	-> {{halt, 400}, wm_reqdata(), any()};
-				(wm_reqdata(), any(), string())
-	-> {boolean(), wm_reqdata(), any()}.
+			-> {{halt, 400}, wm_reqdata(), any()};
+		(wm_reqdata(), any(), string())
+			-> {boolean(), wm_reqdata(), any()}.
 from_json(RD, Ctx, {error, no_data}) ->
-	%% There is nothing to post, it's malfomed
-	{{halt, 400}, RD, Ctx};
+	signal_malformed(RD, Ctx).
 
 from_json(RD, Ctx, Title) ->
 	Id = id_from_path(RD),
@@ -118,6 +117,10 @@ set_location_header_if_not_exists(RD, Ctx, Id) ->
 			wrq:set_resp_header("Location", Id, RD);
 		{true, _, _}  -> RD
 	end.
+
+-spec signal_malformed_request(wm_reqdata(), any())-> {{halt, 400}, wm_reqdata(), any()}
+signal_malformed_request(RD, Ctx) ->
+	{{halt, 400}, RD, Ctx};
 
 
 -spec paper2json(integer(), string()) -> string();

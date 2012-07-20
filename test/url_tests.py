@@ -3,7 +3,6 @@
 #!/usr/bin/python
 import requests
 import unittest
-import time
 
 class TestPaperAPI(unittest.TestCase):
 
@@ -93,6 +92,12 @@ class TestPaperAPI(unittest.TestCase):
 		self.assertNotEqual(resp.headers["location"], None)
 		# the new one is not the one which the POSt was apllied to
 		self.assertNotEqual(resp.headers["location"], self.paper_url+'1')
+
+
+	def test_put_without_data_is_malformed(self):
+		url = self.paper_url + '1'
+		resp = requests.put(url, data = {}, headers=self.json_headers)
+		self.assertEqual(resp.status_code, 400)
 
 
 if __name__ == "__main__":
